@@ -1,0 +1,105 @@
+Paper_Author,Year,Algorithm,Device_Platform,CPU_Type,CPU_Freq_MHz,RAM_KB,Flash_KB,Data_Size_Bytes,Key_Size_Bits,Exec_Time_ms,Throughput_Kbps,Memory_Used_Bytes,Energy_mJ,Notes
+Diehl et al.,2017,AES-128,Kintex-7 FPGA,FPGA,287.0,,,128,128,,119000.0,318.0,0.000914,Hardware implementation
+Diehl et al.,2017,SIMON,Kintex-7 FPGA,FPGA,564.0,,,96,96,,1041000.0,435.0,0.000142,SIMON 96/96 hardware
+Diehl et al.,2017,SPECK,Kintex-7 FPGA,FPGA,473.0,,,96,96,,1622000.0,452.0,8e-05,SPECK 96/96 - highest throughput
+Diehl et al.,2017,PRESENT,Kintex-7 FPGA,FPGA,542.0,,,64,80,,1084000.0,311.0,0.000114,PRESENT-80 hardware
+Diehl et al.,2017,AES-128,8-bit processor,Custom 8-bit,280.0,0.708,,128,128,14.36,2501.0,708.0,0.046,Software - 898 cycles/byte
+Diehl et al.,2017,SIMON,8-bit processor,Custom 8-bit,265.0,0.317,,96,96,58.234,437.0,317.0,0.2631,Software - 4853 cycles/byte
+Diehl et al.,2017,SPECK,8-bit processor,Custom 8-bit,325.0,0.277,,96,96,29.046,1075.0,277.0,0.0949,Software - 2421 cycles/byte
+Diehl et al.,2017,PRESENT,8-bit processor,Custom 8-bit,285.0,0.204,,64,80,20.03,911.0,204.0,0.1251,Software - 2504 cycles/byte
+Diehl et al.,2017,AES-128,Kintex-7 FPGA,FPGA,287.0,,,16,128,,119000.0,318.0,,HW area in LUTs
+Diehl et al.,2017,SIMON,Kintex-7 FPGA,FPGA,564.0,,,12,96,,1041000.0,435.0,,HW area in LUTs
+Diehl et al.,2017,SPECK,Kintex-7 FPGA,FPGA,473.0,,,12,96,,1622000.0,452.0,,HW area in LUTs
+Diehl et al.,2017,PRESENT,Kintex-7 FPGA,FPGA,542.0,,,8,80,,1084000.0,311.0,,HW area in LUTs
+Diehl et al.,2017,AES-128,8-bit processor,Custom 8-bit,280.0,,,16,128,14360.0,2501.0,377.0,,SW area in LUTs
+Diehl et al.,2017,SIMON,8-bit processor,Custom 8-bit,265.0,,,12,96,58234.0,437.0,390.0,,SW area in LUTs
+Diehl et al.,2017,SPECK,8-bit processor,Custom 8-bit,325.0,,,12,96,29046.0,1075.0,290.0,,SW area in LUTs
+Diehl et al.,2017,PRESENT,8-bit processor,Custom 8-bit,285.0,,,8,80,20030.0,911.0,377.0,,SW area in LUTs
+Sleem & Couturier,2021,SPECK,ATmega328P,ATmega328P,16.0,2.0,32.0,16,96,0.94,,,,Original Speck 26 rounds
+Sleem & Couturier,2021,SPECK,ATmega328P,ATmega328P,16.0,2.0,32.0,512,96,29.668,,,,Original Speck 26 rounds
+Sleem & Couturier,2021,SPECK,Teensy 3.6,ARM Cortex-M4,180.0,256.0,,16,96,0.002,,,,32-bit processor
+Sleem & Couturier,2021,SPECK,Teensy 3.6,ARM Cortex-M4,180.0,256.0,,65536,96,7.015,,,,Original Speck
+Sleem & Couturier,2021,SPECK,DOIT ESP32,ESP32,80.0,4096.0,,16,96,0.009,,,,32-bit with WiFi/Bluetooth
+Sleem & Couturier,2021,SPECK,DOIT ESP32,ESP32,80.0,4096.0,,4096,96,0.597,,,,Original Speck
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,1.448,,128,128,22616.0,,14168.0,,SIMON 128/128
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,1.172,,96,144,15948.0,,11932.0,,SIMON 96/144
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,0.94,,64,96,12616.0,201.0,9616.0,,SIMON 64/96 - 2592 blocks
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,0.788,,48,96,10598.0,,8098.0,,SIMON 48/96
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,0.636,,32,64,8832.0,102.0,6332.0,,SIMON 32/64 - 648 blocks
+Nithya & Kumar,2016,AES-128,ATmega328P,ATmega328P,16.0,3.296,,128,128,19824.0,259.0,14324.0,,AES baseline
+Nithya & Kumar,2016,SIMON,Intel Core i5,i5-3230M,2600.0,,,128,128,306.0,,39430.0,0.000118,SIMON 128/128 on desktop
+Nithya & Kumar,2016,SIMON,Intel Core i5,i5-3230M,2600.0,,,96,144,243.0,,39430.0,9.3e-05,SIMON 96/144 on desktop
+Nithya & Kumar,2016,SIMON,Intel Core i5,i5-3230M,2600.0,,,64,96,177.0,,39430.0,6.8e-05,SIMON 64/96 on desktop
+Nithya & Kumar,2016,SIMON,Intel Core i5,i5-3230M,2600.0,,,48,96,143.0,,39430.0,5.5e-05,SIMON 48/96 on desktop
+Nithya & Kumar,2016,SIMON,Intel Core i5,i5-3230M,2600.0,,,32,64,96.0,,39430.0,3.7e-05,SIMON 32/64 on desktop
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,,,16,64,,,102.0,40.0,SIMON 32/64 for 16 bytes
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,,,16,96,,,201.0,160.0,SIMON 64/96 for 16 bytes
+Nithya & Kumar,2016,AES-128,ATmega328P,ATmega328P,16.0,,,16,128,,,259.0,210.0,AES for 16 bytes
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,,,512,64,,,3264.0,1300.0,SIMON 32/64 for 512 bytes
+Nithya & Kumar,2016,SIMON,ATmega328P,ATmega328P,16.0,,,512,96,,,6451.0,5100.0,SIMON 64/96 for 512 bytes
+Nithya & Kumar,2016,AES-128,ATmega328P,ATmega328P,16.0,,,512,128,,,8281.0,6700.0,AES for 512 bytes
+Bogdanov et al.,2007,PRESENT,ASIC,ASIC,0.1,,,64,80,0.32,200.0,1570.0,0.0016,0.18µm process 1570 GE
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,32,64,1.6,15.0,763.0,,IBM 8RF 130nm
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,32,64,2.67,12.0,884.0,,IBM 8RF 130nm
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,48,72,3.2,15.1,631.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,48,72,4.0,12.0,693.0,,
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,48,96,3.2,15.0,739.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,48,96,4.0,12.0,794.0,,
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,64,96,3.6,17.8,838.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,64,96,4.41,14.5,984.0,,
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,64,128,3.84,16.7,1000.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,64,128,4.64,13.8,1127.0,,
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,96,96,6.49,14.8,984.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,96,96,6.96,13.8,1134.0,,
+Beaulieu et al.,2013,SIMON,ASIC,ASIC,0.1,,,128,128,5.59,22.9,1317.0,,
+Beaulieu et al.,2013,SPECK,ASIC,ASIC,0.1,,,128,128,10.58,12.1,1396.0,,
+Beaulieu et al.,2013,AES,ASIC,ASIC,0.1,,,128,128,2.26,56.6,2400.0,,Reference from paper
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.384,0.064,32,64,2.34,109.71,384.0,,168 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.424,0.044,32,64,1.51,169.54,424.0,,110 cycles/byte
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.43,0.108,48,72,2.61,147.13,430.0,,187 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.532,0.066,48,72,1.39,275.54,532.0,,100 cycles/byte
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.442,0.108,48,96,2.61,147.13,442.0,,187 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.562,0.069,48,96,1.45,264.83,562.0,,104 cycles/byte
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.53,0.168,64,96,3.19,160.5,530.0,,205 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.556,0.104,64,96,1.78,287.64,556.0,,114 cycles/byte
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.404,0.176,64,128,3.38,151.48,404.0,,217 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.596,0.108,64,128,1.84,278.26,596.0,,118 cycles/byte
+Beaulieu et al.,2013,SIMON,ATmega128,ATmega128,16.0,0.446,0.544,128,128,5.19,197.11,446.0,,333 cycles/byte
+Beaulieu et al.,2013,SPECK,ATmega128,ATmega128,16.0,0.388,0.256,128,128,2.17,471.43,388.0,,139 cycles/byte
+Beaulieu et al.,2013,AES,ATmega128,ATmega128,16.0,0.943,0.033,128,128,2.23,458.74,943.0,,Reference
+Dinu et al.,2015,AES-128,ATmega128,AVR,7.8,0.398,2.94,128,128,7.47,137.08,408.0,,CBC_mode_with_key_schedule
+Dinu et al.,2015,PRESENT,ATmega128,AVR,7.8,0.438,2.11,128,80,31.44,32.57,448.0,,CBC_mode_Assembly_impl
+Dinu et al.,2015,SIMON,ATmega128,AVR,7.8,0.355,1.06,128,96,8.16,125.49,363.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SIMON,ATmega128,AVR,7.8,0.366,1.1,128,128,8.54,119.91,375.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,ATmega128,AVR,7.8,0.287,0.944,128,96,5.11,200.39,294.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,ATmega128,AVR,7.8,0.295,0.854,128,128,5.76,177.78,302.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,AES-128,MSP430F1611,MSP430,8.0,0.398,2.62,128,128,10.81,94.73,408.0,,CBC_mode_with_key_schedule
+Dinu et al.,2015,PRESENT,MSP430F1611,MSP430,8.0,0.438,1.78,128,80,25.26,40.52,448.0,,CBC_mode_Assembly_impl
+Dinu et al.,2015,SIMON,MSP430F1611,MSP430,8.0,0.352,0.72,128,96,5.97,171.54,360.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SIMON,MSP430F1611,MSP430,8.0,0.363,0.742,128,128,6.23,164.37,372.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,MSP430F1611,MSP430,8.0,0.281,0.543,128,96,3.92,261.22,288.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,MSP430F1611,MSP430,8.0,0.289,0.559,128,128,4.04,253.47,296.0,,CBC_mode_64bit_block_Assembly
+Dinu et al.,2015,AES-128,Cortex-M3,ARM,84.0,0.441,2.98,128,128,0.88,1163.64,452.0,,CBC_mode_with_key_schedule
+Dinu et al.,2015,PRESENT,Cortex-M3,ARM,84.0,0.459,2.07,128,80,3.27,313.15,470.0,,CBC_mode_Assembly_impl
+Dinu et al.,2015,SIMON,Cortex-M3,ARM,84.0,0.367,0.586,128,96,0.27,3790.15,376.0,,CBC_mode_64bit_block
+Dinu et al.,2015,SIMON,Cortex-M3,ARM,84.0,0.383,0.547,128,128,0.28,3656.39,392.0,,CBC_mode_64bit_block
+Dinu et al.,2015,SPECK,Cortex-M3,ARM,84.0,0.301,0.48,128,96,0.18,5687.23,308.0,,CBC_mode_64bit_block
+Dinu et al.,2015,SPECK,Cortex-M3,ARM,84.0,0.301,0.434,128,128,0.2,5120.98,308.0,,CBC_mode_64bit_block
+Dinu et al.,2015,AES-128,ATmega128,AVR,7.8,0.079,1.22,16,128,0.44,293.33,81.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,PRESENT,ATmega128,AVR,7.8,0.055,1.26,16,80,2.16,59.26,56.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,SIMON,ATmega128,AVR,7.8,0.056,0.586,16,96,0.55,234.29,57.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SIMON,ATmega128,AVR,7.8,0.056,0.594,16,128,0.57,224.72,57.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,ATmega128,AVR,7.8,0.052,0.494,16,96,0.34,377.36,53.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,ATmega128,AVR,7.8,0.052,0.441,16,128,0.37,346.25,53.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,AES-128,MSP430F1611,MSP430,8.0,0.078,1.14,16,128,0.56,228.57,80.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,PRESENT,MSP430F1611,MSP430,8.0,0.057,1.05,16,80,1.54,83.12,58.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,SIMON,MSP430F1611,MSP430,8.0,0.055,0.449,16,96,0.36,356.25,56.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SIMON,MSP430F1611,MSP430,8.0,0.055,0.457,16,128,0.38,337.21,56.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,MSP430F1611,MSP430,8.0,0.047,0.32,16,96,0.24,533.33,48.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,SPECK,MSP430F1611,MSP430,8.0,0.047,0.324,16,128,0.25,512.0,48.0,,CTR_mode_64bit_block_Assembly
+Dinu et al.,2015,AES-128,Cortex-M3,ARM,84.0,0.121,1.32,16,128,0.05,2560.0,124.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,PRESENT,Cortex-M3,ARM,84.0,0.078,1.19,16,80,0.2,640.0,80.0,,CTR_mode_precomputed_keys_Assembly
+Dinu et al.,2015,SIMON,Cortex-M3,ARM,84.0,0.063,0.406,16,96,0.02,8000.0,64.0,,CTR_mode_64bit_block
+Dinu et al.,2015,SIMON,Cortex-M3,ARM,84.0,0.063,0.379,16,128,0.02,7272.73,64.0,,CTR_mode_64bit_block
+Dinu et al.,2015,SPECK,Cortex-M3,ARM,84.0,0.055,0.25,16,96,0.01,12800.0,56.0,,CTR_mode_64bit_block
+Dinu et al.,2015,SPECK,Cortex-M3,ARM,84.0,0.059,0.27,16,128,0.01,13186.81,60.0,,CTR_mode_64bit_block
