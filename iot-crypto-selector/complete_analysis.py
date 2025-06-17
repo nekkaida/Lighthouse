@@ -1,258 +1,311 @@
+#!/usr/bin/env python3
 """
-Improved analysis for 104-point dataset with better handling of imbalanced data
+complete_analysis.py
+Complete analysis pipeline for IoT cryptographic algorithm selection
 """
 
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from imblearn.over_sampling import SMOTE
-from imblearn.pipeline import Pipeline
+from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns
-import warnings
-warnings.filterwarnings('ignore')
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import joblib
+import shap
+from datetime import datetime
 
-def improved_analysis():
-    """
-    Improved analysis addressing the issues found
-    """
-    print("="*60)
-    print("IMPROVED ANALYSIS FOR 104-POINT DATASET")
-    print("="*60)
+# Set style for better plots
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
+
+def load_and_analyze_dataset(filepath='data/processed/dataset_97_processed.csv'):
+    """Load dataset and perform exploratory data analysis"""
     
-    # Load the processed dataset
-    df = pd.read_csv('data/raw/final_core4_dataset.csv')
-    print(f"\nDataset loaded: {len(df)} points")
+    df = pd.read_csv(filepath)
     
-    # Clean algorithm names
-    df['Algorithm_Clean'] = df['Algorithm'].apply(lambda x: 
-        'AES-128' if 'AES' in str(x) else
-        'SIMON' if 'SIMON' in str(x) else  
-        'SPECK' if 'SPECK' in str(x) and 'SPECK-R' not in str(x) else
-        'PRESENT' if 'PRESENT' in str(x) else
-        'OTHER'
-    )
+    print("=== Dataset Overview ===")
+    print(f"Total samples: {len(df)}")
+    print(f"Features: {df.shape[1]}")
+    print(f"Algorithms: {df['Algorithm_Clean'].unique()}")
     
-    # Verify Core 4 only
-    df = df[df['Algorithm_Clean'].isin(['AES-128', 'SIMON', 'SPECK', 'PRESENT'])]
+    # Algorithm distribution
+    algo_counts = df['Algorithm_Clean'].value_counts()
+    print("\n=== Algorithm Distribution ===")
+    for algo, count in algo_counts.items():
+        percentage = (count / len(df)) * 100
+        print(f"{algo}: {count} samples ({percentage:.1f}%)")
     
-    print("\nAlgorithm distribution:")
-    print(df['Algorithm_Clean'].value_counts())
+    # Platform distribution
+    print("\n=== Platform Distribution ===")
+    platform_counts = df['Device_Platform'].value_counts()
+    print(platform_counts.head(10))
     
-    # Enhanced preprocessing
-    print("\n📊 Enhanced Preprocessing...")
+    # Create visualization
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     
-    # Platform features
-    df['is_fpga'] = df['Device_Platform'].str.contains('FPGA', case=False, na=False).astype(int)
-    df['is_8bit'] = df['Device_Platform'].str.contains('8-bit|ATmega|AVR', case=False, na=False).astype(int)
-    df['is_32bit'] = df['Device_Platform'].str.contains('32-bit|ARM|ESP32|Teensy|Cortex', case=False, na=False).astype(int)
-    df['is_asic'] = df['Device_Platform'].str.contains('ASIC', case=False, na=False).astype(int)
+    # Algorithm distribution
+    axes[0, 0].bar(algo_counts.index, algo_counts.values)
+    axes[0, 0].set_title('Algorithm Distribution')
+    axes[0, 0].set_xlabel('Algorithm')
+    axes[0, 0].set_ylabel('Count')
     
-    # Handle missing values with smarter imputation
-    numeric_cols = ['CPU_Freq_MHz', 'RAM_KB', 'Key_Size_Bits', 'Data_Size_Bytes']
-    for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    # CPU Frequency distribution by algorithm
+    for algo in df['Algorithm_Clean'].unique():
+        data = df[df['Algorithm_Clean'] == algo]['CPU_Freq_MHz']
+        axes[0, 1].hist(np.log1p(data), alpha=0.5, label=algo, bins=20)
+    axes[0, 1].set_title('Log CPU Frequency Distribution')
+    axes[0, 1].set_xlabel('Log(CPU Freq + 1)')
+    axes[0, 1].legend()
     
-    # Platform-aware imputation
-    df.loc[df['is_8bit'] == 1, 'CPU_Freq_MHz'] = df.loc[df['is_8bit'] == 1, 'CPU_Freq_MHz'].fillna(16)
-    df.loc[df['is_32bit'] == 1, 'CPU_Freq_MHz'] = df.loc[df['is_32bit'] == 1, 'CPU_Freq_MHz'].fillna(80)
-    df.loc[df['is_fpga'] == 1, 'CPU_Freq_MHz'] = df.loc[df['is_fpga'] == 1, 'CPU_Freq_MHz'].fillna(400)
-    df.loc[df['is_asic'] == 1, 'CPU_Freq_MHz'] = df.loc[df['is_asic'] == 1, 'CPU_Freq_MHz'].fillna(100)
+    # RAM distribution by algorithm
+    for algo in df['Algorithm_Clean'].unique():
+        data = df[df['Algorithm_Clean'] == algo]['RAM_KB']
+        axes[1, 0].hist(np.log1p(data), alpha=0.5, label=algo, bins=20)
+    axes[1, 0].set_title('Log RAM Distribution')
+    axes[1, 0].set_xlabel('Log(RAM KB + 1)')
+    axes[1, 0].legend()
     
-    # Fill remaining
-    df['CPU_Freq_MHz'] = df['CPU_Freq_MHz'].fillna(df['CPU_Freq_MHz'].median())
-    df['RAM_KB'] = df['RAM_KB'].fillna(df['RAM_KB'].median())
-    df['Key_Size_Bits'] = df['Key_Size_Bits'].fillna(96)
-    df['Data_Size_Bytes'] = df['Data_Size_Bytes'].fillna(64)
+    # Key size distribution
+    key_sizes = df.groupby(['Algorithm_Clean', 'Key_Size_Bits']).size().unstack(fill_value=0)
+    key_sizes.plot(kind='bar', ax=axes[1, 1])
+    axes[1, 1].set_title('Key Size Distribution by Algorithm')
+    axes[1, 1].set_xlabel('Algorithm')
+    axes[1, 1].set_ylabel('Count')
     
-    # Feature engineering
-    df['log_cpu_freq'] = np.log1p(df['CPU_Freq_MHz'])
-    df['key_data_ratio'] = df['Key_Size_Bits'] / (df['Data_Size_Bytes'] + 1)
+    plt.tight_layout()
+    plt.savefig('results/dataset_analysis.png', dpi=300)
+    plt.close()
     
-    # Select features based on your SHAP results
-    features = [
-        'Key_Size_Bits',      # 28% importance
-        'CPU_Freq_MHz',       # Important
-        'RAM_KB',             # 12.9% importance
-        'Data_Size_Bytes',
-        'is_fpga',
-        'is_8bit', 
-        'is_32bit',
-        'is_asic',
-        'log_cpu_freq',
-        'key_data_ratio'
+    return df
+
+def prepare_features(df):
+    """Prepare features for machine learning"""
+    
+    feature_columns = [
+        'CPU_Freq_MHz', 'RAM_KB', 'Key_Size_Bits', 'Data_Size_Bytes',
+        'log_cpu_freq', 'is_low_memory', 'freq_per_kb_ram', 'key_data_ratio',
+        'is_8bit', 'is_32bit', 'is_fpga', 'is_asic'
     ]
     
-    X = df[features].fillna(0)
+    # Remove any features that don't exist
+    feature_columns = [col for col in feature_columns if col in df.columns]
+    
+    X = df[feature_columns]
     y = df['Algorithm_Clean']
     
-    # Encode labels
-    le = LabelEncoder()
-    y_encoded = le.fit_transform(y)
+    return X, y, feature_columns
+
+def train_and_evaluate_model(X, y, feature_names):
+    """Train model and perform comprehensive evaluation"""
     
-    print(f"\nFeatures selected: {len(features)}")
-    print(f"Samples per class: {dict(zip(*np.unique(y_encoded, return_counts=True)))}")
-    
-    # Split with stratification
+    # Split data
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y_encoded, test_size=0.25, random_state=42, stratify=y_encoded
+        X, y, test_size=0.25, random_state=42, stratify=y
     )
     
-    print(f"\nTrain: {len(X_train)}, Test: {len(X_test)}")
+    print(f"\n=== Data Split ===")
+    print(f"Training samples: {len(X_train)}")
+    print(f"Test samples: {len(X_test)}")
     
-    # Test multiple approaches
-    print("\n🔬 Testing Multiple Approaches...")
+    # Train model with class balancing
+    model = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        class_weight='balanced',
+        random_state=42
+    )
     
-    results = {}
+    model.fit(X_train, y_train)
     
-    # 1. Basic models (no balancing)
-    print("\n1. Basic Models (No Balancing):")
+    # Predictions
+    y_pred = model.predict(X_test)
+    test_accuracy = accuracy_score(y_test, y_pred)
     
-    models = {
-        'SVM-RBF': SVC(kernel='rbf', C=1.0, gamma='scale', random_state=42),
-        'SVM-Linear': SVC(kernel='linear', C=0.5, random_state=42),
-        'Random Forest': RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42, class_weight='balanced'),
-        'Gradient Boosting': GradientBoostingClassifier(n_estimators=50, max_depth=3, random_state=42)
-    }
+    print(f"\n=== Model Performance ===")
+    print(f"Test Accuracy: {test_accuracy:.4f} ({test_accuracy*100:.2f}%)")
     
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    # Statistical significance test
+    n_classes = len(np.unique(y))
+    baseline_accuracy = 1.0 / n_classes
+    n_test = len(y_test)
     
-    for name, model in models.items():
-        model.fit(X_train_scaled, y_train)
-        y_pred = model.predict(X_test_scaled)
-        acc = accuracy_score(y_test, y_pred)
-        
-        # Cross-validation
-        cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=5)
-        
-        results[name] = {
-            'accuracy': acc,
-            'cv_mean': cv_scores.mean(),
-            'cv_std': cv_scores.std(),
-            'predictions': y_pred
-        }
-        
-        print(f"  {name}: Test={acc:.2%}, CV={cv_scores.mean():.2%} (±{cv_scores.std()*2:.2%})")
+    # Binomial test
+    successes = int(test_accuracy * n_test)
+    p_value = stats.binom_test(successes, n_test, baseline_accuracy, alternative='greater')
     
-    # 2. With SMOTE balancing
-    print("\n2. With SMOTE Balancing:")
+    # Confidence interval (Wilson score interval)
+    z = 1.96  # 95% confidence
+    center = (successes + z**2/2) / (n_test + z**2)
+    margin = z * np.sqrt(center * (1 - center) / (n_test + z**2))
+    ci_lower = center - margin
+    ci_upper = center + margin
     
-    for name, base_model in models.items():
-        # Create pipeline with SMOTE
-        pipeline = Pipeline([
-            ('scaler', StandardScaler()),
-            ('smote', SMOTE(random_state=42)),
-            ('classifier', base_model)
-        ])
-        
-        # Fit pipeline
-        pipeline.fit(X_train, y_train)
-        y_pred = pipeline.predict(X_test)
-        acc = accuracy_score(y_test, y_pred)
-        
-        # Note: CV with SMOTE should be done carefully
-        results[f"{name} + SMOTE"] = {
-            'accuracy': acc,
-            'predictions': y_pred
-        }
-        
-        print(f"  {name} + SMOTE: Test={acc:.2%}")
+    print(f"\n=== Statistical Analysis ===")
+    print(f"Baseline accuracy (random): {baseline_accuracy:.4f} ({baseline_accuracy*100:.1f}%)")
+    print(f"Improvement factor: {test_accuracy/baseline_accuracy:.2f}x")
+    print(f"Binomial test p-value: {p_value:.6f}")
+    print(f"95% Confidence Interval: [{ci_lower:.4f}, {ci_upper:.4f}]")
     
-    # Find best model
-    best_model_name = max(results.keys(), key=lambda x: results[x]['accuracy'])
-    best_acc = results[best_model_name]['accuracy']
+    # Cross-validation
+    cv_scores = cross_val_score(model, X_train, y_train, cv=5)
+    print(f"\n=== Cross-Validation ===")
+    print(f"CV Scores: {cv_scores}")
+    print(f"Mean CV Score: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
     
-    print(f"\n✅ Best Model: {best_model_name} with {best_acc:.2%} accuracy")
+    # Classification report
+    print("\n=== Classification Report ===")
+    print(classification_report(y_test, y_pred))
     
-    # Confusion Matrix for best model
+    # Feature importance
+    importances = model.feature_importances_
+    feature_importance = dict(zip(feature_names, importances))
+    sorted_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)
+    
+    print("\n=== Feature Importance ===")
+    for feature, importance in sorted_features:
+        print(f"{feature}: {importance:.4f} ({importance*100:.1f}%)")
+    
+    return model, X_train, X_test, y_test, y_pred, test_accuracy
+
+def create_visualizations(model, X_test, y_test, y_pred, feature_names):
+    """Create all visualization plots"""
+    
+    # 1. Confusion Matrix
+    cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(8, 6))
-    cm = confusion_matrix(y_test, results[best_model_name]['predictions'])
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=le.classes_,
-                yticklabels=le.classes_)
-    plt.title(f'Improved Confusion Matrix - {best_model_name}\n'
-              f'Accuracy: {best_acc:.2%} (104 data points)')
+                xticklabels=sorted(np.unique(y_test)),
+                yticklabels=sorted(np.unique(y_test)))
+    plt.title('Confusion Matrix - Test Set')
     plt.ylabel('True Algorithm')
     plt.xlabel('Predicted Algorithm')
     plt.tight_layout()
-    plt.savefig('results/confusion_matrix_improved_104.png', dpi=300)
-    plt.show()
+    plt.savefig('results/confusion_matrix_final.png', dpi=300)
+    plt.close()
     
-    # Classification report
-    print("\nClassification Report (Best Model):")
-    print(classification_report(y_test, results[best_model_name]['predictions'],
-                              target_names=le.classes_))
+    # 2. Feature Importance from Random Forest
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1]
     
-    # Feature importance if Random Forest
-    if 'Random Forest' in best_model_name:
-        model = models.get('Random Forest', None)
-        if model and hasattr(model, 'feature_importances_'):
-            importance_df = pd.DataFrame({
-                'feature': features,
-                'importance': model.feature_importances_
-            }).sort_values('importance', ascending=False)
-            
-            print("\nFeature Importance (Random Forest):")
-            for _, row in importance_df.iterrows():
-                print(f"  {row['feature']}: {row['importance']:.3f}")
+    plt.figure(figsize=(10, 6))
+    plt.title("Feature Importance - Random Forest")
+    plt.bar(range(len(feature_names)), importances[indices])
+    plt.xticks(range(len(feature_names)), 
+               [feature_names[i] for i in indices], 
+               rotation=45, ha='right')
+    plt.ylabel('Importance')
+    plt.tight_layout()
+    plt.savefig('results/feature_importance_rf.png', dpi=300)
+    plt.close()
     
-    return results, le, features
+    # 3. SHAP Analysis
+    print("\n=== Generating SHAP Explanations ===")
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_test)
+    
+    # SHAP summary plot
+    plt.figure(figsize=(10, 8))
+    shap.summary_plot(shap_values, X_test, feature_names=feature_names,
+                      class_names=model.classes_, show=False)
+    plt.tight_layout()
+    plt.savefig('results/shap_summary_all_classes.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # SHAP importance plot
+    plt.figure(figsize=(10, 6))
+    shap.summary_plot(shap_values, X_test, feature_names=feature_names,
+                      plot_type="bar", class_names=model.classes_, show=False)
+    plt.tight_layout()
+    plt.savefig('results/shap_importance_15points.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    return explainer, shap_values
 
-def create_balanced_splits(X, y, n_splits=5):
-    """
-    Create balanced train/test splits for better evaluation
-    """
-    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+def generate_example_predictions(model, X_test, feature_names, n_examples=3):
+    """Generate example predictions with explanations"""
     
-    scores = []
-    for train_idx, test_idx in skf.split(X, y):
-        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
-        
-        # Train model
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-        
-        model = RandomForestClassifier(n_estimators=100, max_depth=5, 
-                                     random_state=42, class_weight='balanced')
-        model.fit(X_train_scaled, y_train)
-        
-        score = model.score(X_test_scaled, y_test)
-        scores.append(score)
+    print("\n=== Example Predictions with Explanations ===")
     
-    return np.mean(scores), np.std(scores)
+    # Get a few test samples
+    sample_indices = np.random.choice(X_test.index, n_examples, replace=False)
+    
+    explainer = shap.TreeExplainer(model)
+    
+    for idx in sample_indices:
+        sample = X_test.loc[[idx]]
+        prediction = model.predict(sample)[0]
+        probabilities = model.predict_proba(sample)[0]
+        
+        print(f"\n--- Example {idx} ---")
+        print(f"Predicted Algorithm: {prediction}")
+        print(f"Confidence: {max(probabilities)*100:.1f}%")
+        print("\nDevice Characteristics:")
+        print(f"  CPU Frequency: {sample['CPU_Freq_MHz'].values[0]:.1f} MHz")
+        print(f"  RAM: {sample['RAM_KB'].values[0]:.3f} KB")
+        print(f"  Key Size: {sample['Key_Size_Bits'].values[0]} bits")
+        
+        # Get SHAP values for this prediction
+        shap_values = explainer.shap_values(sample)
+        if isinstance(shap_values, list):
+            # Multi-class: get values for predicted class
+            class_idx = list(model.classes_).index(prediction)
+            shap_vals = shap_values[class_idx][0]
+        else:
+            shap_vals = shap_values[0]
+        
+        # Top contributing features
+        feature_impacts = list(zip(feature_names, shap_vals))
+        feature_impacts.sort(key=lambda x: abs(x[1]), reverse=True)
+        
+        print("\nTop Contributing Features:")
+        for feat, impact in feature_impacts[:3]:
+            direction = "increases" if impact > 0 else "decreases"
+            print(f"  {feat}: {direction} likelihood (impact: {impact:.3f})")
 
 def main():
-    """
-    Run improved analysis
-    """
-    print("🚀 Running Improved Analysis for 104-Point Dataset\n")
+    """Run complete analysis pipeline"""
     
-    results, le, features = improved_analysis()
+    print("=== IoT Cryptographic Algorithm Selection Analysis ===\n")
     
-    # Summary
-    print("\n" + "="*60)
-    print("ANALYSIS SUMMARY")
-    print("="*60)
-    print("\nKey Findings:")
-    print("1. Dataset has 104 unique Core-4 data points")
-    print("2. Class imbalance is a major challenge")
-    print("3. SMOTE balancing may help improve minority class prediction")
-    print("4. Random Forest with class_weight='balanced' shows promise")
-    print("\nRecommendations for Thesis:")
-    print("- Report actual 104 data points (not 151)")
-    print("- Acknowledge class imbalance as a limitation")
-    print("- Consider collecting more AES-128 and PRESENT data")
-    print("- Use stratified cross-validation for evaluation")
+    # Load and analyze dataset
+    df = load_and_analyze_dataset()
     
-    return results
+    # Prepare features
+    X, y, feature_names = prepare_features(df)
+    
+    # Train and evaluate model
+    model, X_train, X_test, y_test, y_pred, test_accuracy = train_and_evaluate_model(X, y, feature_names)
+    
+    # Create visualizations
+    explainer, shap_values = create_visualizations(model, X_test, y_test, y_pred, feature_names)
+    
+    # Generate example predictions
+    generate_example_predictions(model, X_test, feature_names)
+    
+    # Save model
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    model_path = f'models/final_model_{timestamp}.pkl'
+    joblib.dump(model, model_path)
+    print(f"\n=== Model saved to: {model_path} ===")
+    
+    # Save results summary
+    results_summary = {
+        'timestamp': timestamp,
+        'total_samples': len(df),
+        'test_accuracy': test_accuracy,
+        'baseline_accuracy': 0.25,
+        'improvement_factor': test_accuracy / 0.25,
+        'algorithm_distribution': df['Algorithm_Clean'].value_counts().to_dict()
+    }
+    
+    pd.DataFrame([results_summary]).to_csv(f'results/analysis_summary_{timestamp}.csv', index=False)
+    
+    print("\n=== Analysis Complete ===")
+    print(f"Final model accuracy: {test_accuracy:.4f} ({test_accuracy*100:.2f}%)")
 
 if __name__ == "__main__":
-    results = main()
+    main()
